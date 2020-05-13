@@ -1,0 +1,6 @@
+{
+  "java.home": "/Library/Java/JavaVirtualMachines/adoptopenjdk-13.jdk/Contents/Home",
+  "files.exclude": {
+    "**/*.class": true
+  }
+}
