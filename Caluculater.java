@@ -116,6 +116,11 @@ public class Caluculater {
         System.out.println(inputString);
     }
 
+    /**
+     * エラーの原因になるような、不要な文字があったらfalseを返します。
+     * @param  inputString String  入力された文字列
+     * @return             boolean 不要な文字があるかどうか
+     */
     private static Boolean checkError(String inputString){
         final String ERROR_INFI = "0/[0-9]?";
         final String ERROR_JPN = "[ぁ-んー]|[ァ-ケー]|[ｦ-ﾟ]";
@@ -136,6 +141,10 @@ public class Caluculater {
         return true;
     }
 
+    /**
+     * 入力部分、エラーの原因になるようなものは弾きます。
+     * @return 入力文字列
+     */
     private static String input(){
         while(true){
             System.out.println("input caluculater");
