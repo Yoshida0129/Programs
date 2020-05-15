@@ -3,7 +3,7 @@ import java.util.regex.*;
 import java.util.function.Function;
 import java.lang.String;
 
-public class Caluculater {
+public class Calculater {
     /**
      * 計算記号の実行
      * @param  int    a       計算数値
@@ -147,7 +147,7 @@ public class Caluculater {
      */
     private static String input(){
         while(true){
-            System.out.println("input caluculater");
+            System.out.println("input calculater");
             String inputString = new Scanner(System.in).nextLine().replaceAll(" ", "");
             if(checkError(inputString)){
                 return inputString;
