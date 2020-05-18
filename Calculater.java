@@ -77,13 +77,16 @@ public class Calculater {
         final String BRACKET_ONE_NUM_REGEX   = "\\((\\-)?[0-9]+\\)"; // 括弧内数字のみ
         final String FIRST_BEREKENING_REGEX  = "(\\-)?[0-9]+((\\*|\\/)|(\\-))+[0-9]+"; // 乗算割算抽出
         final String SECOND_BEREKENING_REGEX = "(\\-)?[0-9]+(\\+|\\-)+[0-9]+"; // 乗算割算抽出
+        Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+((\\+|\\-|\\*|\\/)+[0-9]+)*)\\)", "$1"); // 余計な括弧を外す
+        String inputString = input.replaceAll("((\\)|[0-9])+)+\\(", "$1*(");// )(, 0( -> )*(, 0*(
+        inputString = inputString.replaceAll("(\\(+)((\\+|\\-/)+[0-9]+\\)(.*?))", "$10$2"); // (-1), (+3) -> (0-1), (0+3)
+        inputString = inputString.replaceAll("(\\(+)((\\*|\\/)+[0-9]+\\)(.*?))", "$11$2"); // (*3), (/2) -> (1*3), (1/2)
 
-        Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+((\\+|\\-|\\*|\\/)+[0-9]+)*)\\)", "$1");
-
-        String inputString = input.replaceAll("((\\)|[0-9])+)+\\(", "$1*(");
+        // 括弧内計算
         while(getBooByRegex(BRACKET_REGEX, inputString) || getBooByRegex(BRACKET_ONE_NUM_REGEX, inputString) ) {
             String tempBracket = getStrByRegex(BRACKET_REGEX, inputString);
             String temp = deleteBracket.apply(tempBracket);
+            // 乗算除算
             while(getBooByRegex(FIRST_BEREKENING_REGEX, temp)) {
                 String result = String.valueOf(berekeningAndReplace(temp));
                 inputString = inputString.replace(tempBracket, result);
@@ -92,6 +95,7 @@ public class Calculater {
                     temp = deleteBracket.apply(tempBracket);
                 } catch (Exception Err) {break;}
             }
+            // 加算減算
             while(getBooByRegex(SECOND_BEREKENING_REGEX, temp)) {
                 String result = String.valueOf(berekeningAndReplace(temp));
                 inputString = inputString.replace(tempBracket, result);
@@ -102,11 +106,13 @@ public class Calculater {
             }
         }
 
+        // 乗算除算
         while(getBooByRegex(FIRST_BEREKENING_REGEX, inputString)) {
             String tempFirst = getStrByRegex(FIRST_BEREKENING_REGEX, inputString);
             inputString = inputString.replace(tempFirst, String.valueOf(berekeningAndReplace(tempFirst)));
         }
 
+        // 加算減算
         while(getBooByRegex(SECOND_BEREKENING_REGEX, inputString)) {
             String tempSecond = getStrByRegex(SECOND_BEREKENING_REGEX, inputString);
             inputString = inputString.replace(tempSecond, String.valueOf(berekeningAndReplace(tempSecond)));
