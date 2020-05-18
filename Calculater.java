@@ -122,20 +122,15 @@ public class Calculater {
      * @return             boolean 不要な文字があるかどうか
      */
     private static Boolean checkError(String inputString){
-        final String ERROR_INFI = "0/[0-9]?";
-        final String ERROR_JPN = "[ぁ-んー]|[ァ-ケー]|[ｦ-ﾟ]";
-        final String ERROR_STR = "(!|@|#|\\$|%|\\^|&|:|_|~|\\{|\\}|\\|>|<|\\?|=|\\`|\\[|\\]|;|\\'|,|\\/|\\.)+";
+        final String ERROR_INFI = "[0-9]+/0";
+        final String EXCLUSTION_CHAR = "([^0-9^\\+^\\-^*^/^\\(^\\)])";
 
+        if(getBooByRegex(EXCLUSTION_CHAR, inputString)){
+            System.out.println("使用できる文字は半角数字と+, -, *, /, (, )のみです");
+            return false;
+        }
         if(getBooByRegex(ERROR_INFI, inputString)){
             System.out.println("無限大の結果が出る恐れのあるものは入力ないでください");
-            return false;
-        }
-        if(getBooByRegex(ERROR_JPN, inputString)){
-            System.out.println("日本語文字を使用しないでください");
-            return false;
-        }
-        if(getBooByRegex(ERROR_STR, inputString)){
-            System.out.println("不明な文字が存在しています。");
             return false;
         }
         return true;
