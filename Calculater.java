@@ -142,6 +142,7 @@ public class Calculater {
     private static Boolean checkError(String inputString){
         final String ERROR_INFI = "[0-9]+/0";
         final String EXCLUSTION_CHAR = "([^0-9^\\+^\\-^*^/^\\(^\\)])";
+        final String TWICE_SYMBOL = "(\\+|\\-|\\*|\\/){2}";
 
         if(getBooByRegex(EXCLUSTION_CHAR, inputString)){
             System.out.println("使用できる文字は半角数字と+, -, *, /, (, )のみです");
@@ -149,6 +150,10 @@ public class Calculater {
         }
         if(countCharInStr('(', inputString) != countCharInStr(')', inputString)){
             System.out.println("括弧の合計数が不一致です。");
+            return false;
+        }
+        if(getBooByRegex(TWICE_SYMBOL, inputString)){
+            System.out.println("2連続の符号は禁止されています。");
             return false;
         }
         if(getBooByRegex(ERROR_INFI, inputString)){
