@@ -79,7 +79,7 @@ public class Calculater {
         final String SECOND_BEREKENING_REGEX = "(\\-)?[0-9]+(\\+|\\-)+[0-9]+"; // 乗算割算抽出
         Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+((\\+|\\-|\\*|\\/)+[0-9]+)*)\\)", "$1"); // 余計な括弧を外す
         String inputString = input.replaceAll("((\\)|[0-9])+)+\\(", "$1*(");// )(, 0( -> )*(, 0*(
-        inputString = inputString.replaceAll("(\\(+)((\\+|\\-/)+[0-9]+\\)(.*?))", "$10$2"); // (-1), (+3) -> (0-1), (0+3)
+        inputString = inputString.replaceAll("(\\(+)((\\+|\\-)+[0-9]+\\)(.*?))", "$10$2"); // (-1), (+3) -> (0-1), (0+3)
         inputString = inputString.replaceAll("(\\(+)((\\*|\\/)+[0-9]+\\)(.*?))", "$11$2"); // (*3), (/2) -> (1*3), (1/2)
 
         // 括弧内計算
