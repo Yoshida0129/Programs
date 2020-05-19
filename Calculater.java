@@ -121,6 +121,20 @@ public class Calculater {
     }
 
     /**
+     * 文字列の中にあるキャラクターの個数を返します
+     * @param  target 対象キャラクター
+     * @param  source 文字列
+     * @return 文字カウント数
+     */
+    private static int countCharInStr(char target, String source){
+        int counter = 0;
+        for(char CSource: source.toCharArray()){
+            if(CSource == target) counter++;
+        }
+        return counter;
+    }
+
+    /**
      * エラーの原因になるような、不要な文字があったらfalseを返します。
      * @param  inputString String  入力された文字列
      * @return             boolean 不要な文字があるかどうか
@@ -131,6 +145,10 @@ public class Calculater {
 
         if(getBooByRegex(EXCLUSTION_CHAR, inputString)){
             System.out.println("使用できる文字は半角数字と+, -, *, /, (, )のみです");
+            return false;
+        }
+        if(countCharInStr('(', inputString) != countCharInStr(')', inputString)){
+            System.out.println("括弧の合計数が不一致です。");
             return false;
         }
         if(getBooByRegex(ERROR_INFI, inputString)){
@@ -145,15 +163,15 @@ public class Calculater {
      * @return 入力文字列
      */
     private static String input(){
+        String inputString;
         Scanner scanner = new Scanner(System.in);
         while(true){
             System.out.println("input calculater");
-            String inputString = scanner.nextLine().replaceAll(" ", "");
-            if(checkError(inputString)){
-                scanner.close();
-                return inputString;
-            }
+            inputString = scanner.nextLine().replaceAll(" ", "");
+            if(checkError(inputString)) break;
         }
+        scanner.close();
+        return inputString;
     }
 
     public static void main(String[] args) {
