@@ -6,12 +6,12 @@ import java.lang.String;
 public class Calculater {
     /**
      * 計算記号の実行
-     * @param  int    a       計算数値
-     * @param  int    b       計算数値
+     * @param  double    a       計算数値
+     * @param  double    b       計算数値
      * @param  String symbool 計算符号
-     * @return int            計算結果
+     * @return double            計算結果
      */
-	private static int berekening (int a, int b, String symbool) {
+	private static double berekening (double a, double b, String symbool) {
 		switch(symbool) {
 			case "+":
 				return a + b;
@@ -59,12 +59,12 @@ public class Calculater {
      * @param String formula 文字列で表されてる式　例: 3+2, 3-1
      * @return               計算結果
      */
-    private static int berekeningAndReplace(String formula){
+    private static double berekeningAndReplace(String formula){
         String symbol = "+";
-        int a = Integer.parseInt(getStrByRegex("^(\\-)?[0-9]+", formula));
+        double a = Double.parseDouble(getStrByRegex("^(\\-)?[0-9]+\\.?[0-9]+", formula));
         try { symbol = getStrByRegex("(\\+|\\*|\\/)", formula);}
         catch (Exception Err) {}
-		int b = Integer.parseInt(getStrByRegex("(\\-)?[0-9]+$", formula));
+		double b = Double.parseDouble(getStrByRegex("(\\-)?[0-9]+\\.?[0-9]+$", formula));
 		return berekening(a, b, symbol);
     }
 
@@ -73,14 +73,14 @@ public class Calculater {
      * @param input String 入力文字列
      */
     private static void run(String input){
-        final String BRACKET_REGEX           = "\\([^\\(\\)]*(-)?[0-9]+((\\+|\\-|\\*|\\/)?[0-9]+)*\\)";// 括弧の有無確認
-        final String BRACKET_ONE_NUM_REGEX   = "\\((\\-)?[0-9]+\\)"; // 括弧内数字のみ
-        final String FIRST_BEREKENING_REGEX  = "(\\-)?[0-9]+((\\*|\\/)|(\\-))+[0-9]+"; // 乗算割算抽出
-        final String SECOND_BEREKENING_REGEX = "(\\-)?[0-9]+(\\+|\\-)+[0-9]+"; // 乗算割算抽出
-        Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+((\\+|\\-|\\*|\\/)+[0-9]+)*)\\)", "$1"); // 余計な括弧を外す
+        final String BRACKET_REGEX           = "\\([^\\(\\)]*(-)?[0-9]+\\.?[0-9]+((\\+|\\-|\\*|\\/)?[0-9]+\\.?[0-9]+)*\\)";// 括弧の有無確認
+        final String BRACKET_ONE_NUM_REGEX   = "\\((\\-)?[0-9]+\\.?[0-9]+\\)"; // 括弧内数字のみ
+        final String FIRST_BEREKENING_REGEX  = "(\\-)?[0-9]+\\.?[0-9]+((\\*|\\/)|(\\-))+[0-9]+\\.?[0-9]+"; // 乗算割算抽出
+        final String SECOND_BEREKENING_REGEX = "(\\-)?[0-9]+\\.?[0-9]+(\\+|\\-)+[0-9]+\\.?[0-9]+"; // 乗算割算抽出
+        Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+\\.?[0-9]+((\\+|\\-|\\*|\\/)+[0-9]+\\.?[0-9]+)*)\\)", "$1"); // 余計な括弧を外す
         String inputString = input.replaceAll("((\\)|[0-9])+)+\\(", "$1*(");// )(, 0( -> )*(, 0*(
-        inputString = inputString.replaceAll("(\\(+)((\\+|\\-)+[0-9]+\\)(.*?))", "$10$2"); // (-1), (+3) -> (0-1), (0+3)
-        inputString = inputString.replaceAll("(\\(+)((\\*|\\/)+[0-9]+\\)(.*?))", "$11$2"); // (*3), (/2) -> (1*3), (1/2)
+        inputString = inputString.replaceAll("(\\(+)((\\+|\\-)+[0-9]+\\.?[0-9]+\\)(.*?))", "$10$2"); // (-1), (+3) -> (0-1), (0+3)
+        inputString = inputString.replaceAll("(\\(+)((\\*|\\/)+[0-9]+\\.?[0-9]+\\)(.*?))", "$11$2"); // (*3), (/2) -> (1*3), (1/2)
 
         // 括弧内計算
         while(getBooByRegex(BRACKET_REGEX, inputString) || getBooByRegex(BRACKET_ONE_NUM_REGEX, inputString) ) {
@@ -140,12 +140,12 @@ public class Calculater {
      * @return             boolean 不要な文字があるかどうか
      */
     private static Boolean checkError(String inputString){
-        final String ERROR_INFI = "[0-9]+/0";
-        final String EXCLUSTION_CHAR = "([^0-9^\\+^\\-^*^/^\\(^\\)])";
+        final String ERROR_INFI = "[0-9]+\\.?[0-9]+/0";
+        final String EXCLUSTION_CHAR = "([^0-9^\\+^\\-^*^/^\\(^\\)^\\.])";
         final String TWICE_SYMBOL = "(\\+|\\-|\\*|\\/){2}";
 
         if(getBooByRegex(EXCLUSTION_CHAR, inputString)){
-            System.out.println("使用できる文字は半角数字と+, -, *, /, (, )のみです");
+            System.out.println("使用できる文字は半角数字と+, -, *, /, (, ), .のみです");
             return false;
         }
         if(countCharInStr('(', inputString) != countCharInStr(')', inputString)){
