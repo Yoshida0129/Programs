@@ -6,12 +6,12 @@ import java.lang.String;
 public class Calculater {
     /**
      * 計算記号の実行
-     * @param  int    a       計算数値
-     * @param  int    b       計算数値
+     * @param  double    a       計算数値
+     * @param  double    b       計算数値
      * @param  String symbool 計算符号
-     * @return int            計算結果
+     * @return double            計算結果
      */
-	private static int berekening (int a, int b, String symbool) {
+	private static double berekening (double a, double b, String symbool) {
 		switch(symbool) {
 			case "+":
 				return a + b;
@@ -34,9 +34,7 @@ public class Calculater {
      * @return String         正規表現のパラメータを返す
      */
     private static String getStrByRegex (String Regex, String formula) {
-        if (!checkError(formula)){
-            System.err.println("無限エラー");
-        }
+        if (!checkError(formula)) System.err.println("無限エラー");
         Pattern p = Pattern.compile(Regex);
         Matcher matcher = p.matcher(formula);
         if(matcher.find()) return matcher.group();
@@ -61,12 +59,12 @@ public class Calculater {
      * @param String formula 文字列で表されてる式　例: 3+2, 3-1
      * @return               計算結果
      */
-    private static int berekeningAndReplace(String formula){
+    private static double berekeningAndReplace(String formula){
         String symbol = "+";
-        int a = Integer.parseInt(getStrByRegex("^(\\-)?[0-9]+", formula));
+        double a = Double.parseDouble(getStrByRegex("^(\\-)?[0-9]+\\.?[0-9]+", formula));
         try { symbol = getStrByRegex("(\\+|\\*|\\/)", formula);}
         catch (Exception Err) {}
-		int b = Integer.parseInt(getStrByRegex("(\\-)?[0-9]+$", formula));
+		double b = Double.parseDouble(getStrByRegex("(\\-)?[0-9]+\\.?[0-9]+$", formula));
 		return berekening(a, b, symbol);
     }
 
@@ -82,10 +80,15 @@ public class Calculater {
 
         Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+([\\+\\-\\*\\/]+[0-9]+)*)\\)", "$1");
 
-        String inputString = input.replaceAll("((\\)|[0-9])+)+\\(", "$1*(");
+        String inputString = input.replaceAll("((\\)|[0-9])+)+\\(", "$1*(");// )(, 0( -> )*(, 0*(
+        inputString = inputString.replaceAll("(\\(+)((\\+|\\-)+[0-9]+\\.?[0-9]+\\)(.*?))", "$10$2"); // (-1), (+3) -> (0-1), (0+3)
+        inputString = inputString.replaceAll("(\\(+)((\\*|\\/)+[0-9]+\\.?[0-9]+\\)(.*?))", "$11$2"); // (*3), (/2) -> (1*3), (1/2)
+
+        // 括弧内計算
         while(getBooByRegex(BRACKET_REGEX, inputString) || getBooByRegex(BRACKET_ONE_NUM_REGEX, inputString) ) {
             String tempBracket = getStrByRegex(BRACKET_REGEX, inputString);
             String temp = deleteBracket.apply(tempBracket);
+            // 乗算除算
             while(getBooByRegex(FIRST_BEREKENING_REGEX, temp)) {
                 String result = String.valueOf(berekeningAndReplace(temp));
                 inputString = inputString.replace(tempBracket, result);
@@ -94,6 +97,7 @@ public class Calculater {
                     temp = deleteBracket.apply(tempBracket);
                 } catch (Exception Err) {break;}
             }
+            // 加算減算
             while(getBooByRegex(SECOND_BEREKENING_REGEX, temp)) {
                 String result = String.valueOf(berekeningAndReplace(temp));
                 inputString = inputString.replace(tempBracket, result);
@@ -104,11 +108,13 @@ public class Calculater {
             }
         }
 
+        // 乗算除算
         while(getBooByRegex(FIRST_BEREKENING_REGEX, inputString)) {
             String tempFirst = getStrByRegex(FIRST_BEREKENING_REGEX, inputString);
             inputString = inputString.replace(tempFirst, String.valueOf(berekeningAndReplace(tempFirst)));
         }
 
+        // 加算減算
         while(getBooByRegex(SECOND_BEREKENING_REGEX, inputString)) {
             String tempSecond = getStrByRegex(SECOND_BEREKENING_REGEX, inputString);
             inputString = inputString.replace(tempSecond, String.valueOf(berekeningAndReplace(tempSecond)));
@@ -117,25 +123,43 @@ public class Calculater {
     }
 
     /**
+     * 文字列の中にあるキャラクターの個数を返します
+     * @param  target 対象キャラクター
+     * @param  source 文字列
+     * @return 文字カウント数
+     */
+    private static int countCharInStr(char target, String source){
+        int counter = 0;
+        for(char CSource: source.toCharArray()){
+            if(CSource == target) counter++;
+        }
+        return counter;
+    }
+
+    /**
      * エラーの原因になるような、不要な文字があったらfalseを返します。
      * @param  inputString String  入力された文字列
      * @return             boolean 不要な文字があるかどうか
      */
     private static Boolean checkError(String inputString){
-        final String ERROR_INFI = "0/[0-9]?";
-        final String ERROR_JPN = "[ぁ-んー]|[ァ-ケー]|[ｦ-ﾟ]";
-        final String ERROR_STR = "(!|@|#|\\$|%|\\^|&|:|_|~|\\{|\\}|\\|>|<|\\?|=|\\`|\\[|\\]|;|\\'|,|\\/|\\.)+";
+        final String ERROR_INFI = "[0-9]+\\.?[0-9]+/0";
+        final String EXCLUSTION_CHAR = "([^0-9^\\+^\\-^*^/^\\(^\\)^\\.])";
+        final String TWICE_SYMBOL = "(\\+|\\-|\\*|\\/){2}";
 
+        if(getBooByRegex(EXCLUSTION_CHAR, inputString)){
+            System.out.println("使用できる文字は半角数字と+, -, *, /, (, ), .のみです");
+            return false;
+        }
+        if(countCharInStr('(', inputString) != countCharInStr(')', inputString)){
+            System.out.println("括弧の合計数が不一致です。");
+            return false;
+        }
+        if(getBooByRegex(TWICE_SYMBOL, inputString)){
+            System.out.println("2連続の符号は禁止されています。");
+            return false;
+        }
         if(getBooByRegex(ERROR_INFI, inputString)){
             System.out.println("無限大の結果が出る恐れのあるものは入力ないでください");
-            return false;
-        }
-        if(getBooByRegex(ERROR_JPN, inputString)){
-            System.out.println("日本語文字を使用しないでください");
-            return false;
-        }
-        if(getBooByRegex(ERROR_STR, inputString)){
-            System.out.println("不明な文字が存在しています。");
             return false;
         }
         return true;
@@ -146,13 +170,15 @@ public class Calculater {
      * @return 入力文字列
      */
     private static String input(){
+        String inputString;
+        Scanner scanner = new Scanner(System.in);
         while(true){
             System.out.println("input calculater");
-            String inputString = new Scanner(System.in).nextLine().replaceAll(" ", "");
-            if(checkError(inputString)){
-                return inputString;
-            }
+            inputString = scanner.nextLine().replaceAll(" ", "");
+            if(checkError(inputString)) break;
         }
+        scanner.close();
+        return inputString;
     }
 
     public static void main(String[] args) {
