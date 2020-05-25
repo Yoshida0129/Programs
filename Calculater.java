@@ -75,12 +75,12 @@ public class Calculater {
      * @param input String 入力文字列
      */
     private static void run(String input){
-        final String BRACKET_REGEX = "\\([^\\(\\)]*(-)?[0-9]+((\\+|\\-|\\*|\\/)?[0-9]+)*\\)";
+        final String BRACKET_REGEX = "\\((\\-)?[0-9]+[\\+\\-\\*\\/][0-9]+\\)";
         final String BRACKET_ONE_NUM_REGEX = "\\((\\-)?[0-9]+\\)";
-        final String FIRST_BEREKENING_REGEX =  "(\\-)?[0-9]+((\\*|\\/)|(\\-))+[0-9]+"; // 乗算割算抽出
-        final String SECOND_BEREKENING_REGEX = "(\\-)?[0-9]+(\\+|\\-)+[0-9]+"; // 乗算割算抽出
+        final String FIRST_BEREKENING_REGEX =  "[0-9]+[\\*\\/](\\-)?[0-9]+"; // 乗算割算抽出
+        final String SECOND_BEREKENING_REGEX = "(\\-)?[0-9]+[\\+\\-]+[0-9]+"; // 乗算割算抽出
 
-        Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+((\\+|\\-|\\*|\\/)+[0-9]+)*)\\)", "$1");
+        Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+([\\+\\-\\*\\/]+[0-9]+)*)\\)", "$1");
 
         String inputString = input.replaceAll("((\\)|[0-9])+)+\\(", "$1*(");
         while(getBooByRegex(BRACKET_REGEX, inputString) || getBooByRegex(BRACKET_ONE_NUM_REGEX, inputString) ) {
