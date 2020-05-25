@@ -34,7 +34,7 @@ public class Calculater {
      * @return String         正規表現のパラメータを返す
      */
     private static String getStrByRegex (String Regex, String formula) {
-        if (!checkError(formula)) System.err.println("無限エラー");
+        // if (!checkError(formula)) System.err.println("無限エラー");
         Pattern p = Pattern.compile(Regex);
         Matcher matcher = p.matcher(formula);
         if(matcher.find()) return matcher.group();
@@ -61,10 +61,10 @@ public class Calculater {
      */
     private static double berekeningAndReplace(String formula){
         String symbol = "+";
-        double a = Double.parseDouble(getStrByRegex("^(\\-)?[0-9]+\\.?[0-9]+", formula));
-        try { symbol = getStrByRegex("(\\+|\\*|\\/)", formula);}
+        double a = Double.parseDouble(getStrByRegex("^(\\-)?[0-9]+(\\.[0-9]+)?", formula));
+        try { symbol = getStrByRegex("[\\+\\*\\/]", formula);}
         catch (Exception Err) {}
-		double b = Double.parseDouble(getStrByRegex("(\\-)?[0-9]+\\.?[0-9]+$", formula));
+        double b = Double.parseDouble(getStrByRegex("(\\-)?[0-9]+(\\.[0-9]+)*$", formula));
 		return berekening(a, b, symbol);
     }
 
@@ -73,16 +73,16 @@ public class Calculater {
      * @param input String 入力文字列
      */
     private static void run(String input){
-        final String BRACKET_REGEX = "\\((\\-)?[0-9]+[\\+\\-\\*\\/][0-9]+\\)";
+        final String BRACKET_REGEX = "\\(((\\-)?[0-9]+(\\.[0-9]+)?([\\+\\-\\*\\/]+[0-9]+(\\.[0-9]+)?)*)\\)";
         final String BRACKET_ONE_NUM_REGEX = "\\((\\-)?[0-9]+\\)";
-        final String FIRST_BEREKENING_REGEX =  "[0-9]+[\\*\\/](\\-)?[0-9]+"; // 乗算割算抽出
-        final String SECOND_BEREKENING_REGEX = "(\\-)?[0-9]+[\\+\\-]+[0-9]+"; // 乗算割算抽出
+        final String FIRST_BEREKENING_REGEX =  "(\\-)?[0-9]+(\\.[0-9]+)?[\\*\\/](\\-)?[0-9]+(\\.[0-9]+)?"; // 乗算割算抽出
+        final String SECOND_BEREKENING_REGEX = "(\\-)?[0-9]+(\\.[0-9]+)?[\\+\\-]+[0-9]+(\\.[0-9]+)?"; // 乗算割算抽出
 
-        Function<String, String> deleteBracket = (str) -> str.replaceAll("\\(((\\-)?[0-9]+([\\+\\-\\*\\/]+[0-9]+)*)\\)", "$1");
+        Function<String, String> deleteBracket = (str) -> str.replaceAll(BRACKET_REGEX, "$1");
 
         String inputString = input.replaceAll("((\\)|[0-9])+)+\\(", "$1*(");// )(, 0( -> )*(, 0*(
-        inputString = inputString.replaceAll("(\\(+)((\\+|\\-)+[0-9]+\\.?[0-9]+\\)(.*?))", "$10$2"); // (-1), (+3) -> (0-1), (0+3)
-        inputString = inputString.replaceAll("(\\(+)((\\*|\\/)+[0-9]+\\.?[0-9]+\\)(.*?))", "$11$2"); // (*3), (/2) -> (1*3), (1/2)
+        inputString = inputString.replaceAll("(\\()([\\+\\-][0-9]+\\))", "$10$2"); // (-1), (+3) -> (0-1), (0+3)
+        inputString = inputString.replaceAll("(\\()([\\*\\/][0-9]+\\))", "$11$2"); // (*3), (/2) -> (1*3), (1/2)
 
         // 括弧内計算
         while(getBooByRegex(BRACKET_REGEX, inputString) || getBooByRegex(BRACKET_ONE_NUM_REGEX, inputString) ) {
@@ -119,6 +119,7 @@ public class Calculater {
             String tempSecond = getStrByRegex(SECOND_BEREKENING_REGEX, inputString);
             inputString = inputString.replace(tempSecond, String.valueOf(berekeningAndReplace(tempSecond)));
         }
+
         System.out.println(inputString);
     }
 
